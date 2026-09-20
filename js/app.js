@@ -25,7 +25,7 @@ import {
   uid
 } from "./state.js";
 
-import { testGeminiConnection, isLiveAIMode } from "./api.js";
+import { testGeminiConnection, isLiveAIMode, fetchAccountModels, DEFAULT_MODELS } from "./api.js";
 import { PRESET_ROLES, generateRoadmap } from "./roadmap.js";
 import { InterviewSession, INTERVIEW_TYPES } from "./interview.js";
 import { analyzeResumeATS } from "./resume.js";
@@ -1004,13 +1004,28 @@ function renderSettingsView(goal) {
           </label>
 
           <label>
-            Preferred Model
-            <select name="model" id="api-model-select">
-              <option value="gemini-2.0-flash" ${state.model === "gemini-2.0-flash" || !state.model ? "selected" : ""}>Gemini 2.0 Flash (Recommended & Fast)</option>
-              <option value="gemini-2.5-flash" ${state.model === "gemini-2.5-flash" ? "selected" : ""}>Gemini 2.5 Flash (Hybrid Reasoning)</option>
-              <option value="gemini-2.5-flash-lite" ${state.model === "gemini-2.5-flash-lite" ? "selected" : ""}>Gemini 2.5 Flash-Lite (Low Latency)</option>
-              <option value="gemini-1.5-flash-latest" ${state.model === "gemini-1.5-flash-latest" || state.model === "gemini-1.5-flash" ? "selected" : ""}>Gemini 1.5 Flash (Latest)</option>
-            </select>
+            Gemini Model
+            <div class="api-key-input-wrapper">
+              <select name="model" id="api-model-select">
+                <option value="gemini-2.5-flash" ${state.model === "gemini-2.5-flash" || !state.model ? "selected" : ""}>Gemini 2.5 Flash (Hybrid Reasoning & High Speed)</option>
+                <option value="gemini-2.0-flash" ${state.model === "gemini-2.0-flash" ? "selected" : ""}>Gemini 2.0 Flash (Fast & Reliable)</option>
+                <option value="gemini-2.5-flash-lite" ${state.model === "gemini-2.5-flash-lite" ? "selected" : ""}>Gemini 2.5 Flash-Lite (Low Latency)</option>
+                <option value="gemini-2.0-flash-lite" ${state.model === "gemini-2.0-flash-lite" ? "selected" : ""}>Gemini 2.0 Flash-Lite</option>
+                <option value="gemini-1.5-flash-latest" ${state.model === "gemini-1.5-flash-latest" || state.model === "gemini-1.5-flash" ? "selected" : ""}>Gemini 1.5 Flash (Latest)</option>
+                <option value="custom" ${state.model && !["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-1.5-flash-latest"].includes(state.model) ? "selected" : ""}>Enter Custom Model ID...</option>
+              </select>
+              <button type="button" class="button ghost compact" id="btn-detect-models" title="Query Google AI Studio for accessible models on this key">Scan Key 🔍</button>
+            </div>
+          </label>
+
+          <label id="custom-model-field" ${state.model && !["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-1.5-flash-latest"].includes(state.model) ? "" : "hidden"}>
+            Custom Model ID
+            <input
+              id="custom-model-input"
+              name="customModel"
+              placeholder="e.g. gemini-2.5-flash or gemini-2.0-flash"
+              value="${state.model && !["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-1.5-flash-latest"].includes(state.model) ? escapeHTML(state.model) : ""}"
+            />
           </label>
 
           <div class="api-buttons-row">
@@ -1149,6 +1164,44 @@ function handleContentClicks(e) {
     return;
   }
 
+  // Scan & Detect Models Button
+  if (btn.id === "btn-detect-models") {
+    const input = $("#api-key-input");
+    const statusEl = $("#api-test-status");
+    const key = input ? input.value.trim() : "";
+    if (!key) {
+      if (statusEl) statusEl.innerHTML = `<span style="color:#ff7575">Please enter an API key first.</span>`;
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = "Scanning...";
+    if (statusEl) statusEl.textContent = "Querying Google AI Studio for accessible models...";
+
+    fetchAccountModels(key)
+      .then((models) => {
+        const select = $("#api-model-select");
+        if (select) {
+          select.innerHTML = models.map((m) => `<option value="${escapeHTML(m.id)}">${escapeHTML(m.name)}</option>`)
+            .concat(`<option value="custom">Enter Custom Model ID...</option>`)
+            .join("");
+          if (models.length > 0) {
+            select.value = models[0].id;
+          }
+        }
+        if (statusEl) {
+          statusEl.innerHTML = `<span style="color:#75ffaa">✓ Found ${models.length} accessible models on your Google AI account! Updated list.</span>`;
+        }
+      })
+      .catch((err) => {
+        if (statusEl) statusEl.innerHTML = `<span style="color:#ff7575">✗ Failed to scan models: ${escapeHTML(err.message)}</span>`;
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.textContent = "Scan Key 🔍";
+      });
+    return;
+  }
+
   // Test Gemini Connection Button
   if (btn.id === "btn-test-gemini") {
     const input = $("#api-key-input");
@@ -1160,24 +1213,40 @@ function handleContentClicks(e) {
     }
     btn.disabled = true;
     btn.textContent = "Connecting...";
+
     const modelSelect = $("#api-model-select");
-    const chosenModel = modelSelect ? modelSelect.value : (getState().model || "gemini-2.0-flash");
-    if (statusEl) statusEl.textContent = `Pinging Google Gemini API (${chosenModel})...`;
+    const customInput = $("#custom-model-input");
+    let chosenModel = modelSelect ? modelSelect.value : "";
+    if (chosenModel === "custom" && customInput && customInput.value.trim()) {
+      chosenModel = customInput.value.trim();
+    }
+    if (!chosenModel) chosenModel = getState().model || "gemini-2.5-flash";
+
+    if (statusEl) statusEl.textContent = `Connecting to Google Gemini (${chosenModel})...`;
 
     testGeminiConnection(key, chosenModel)
       .then((res) => {
         if (res.ok) {
           const activeModel = res.model || chosenModel;
           setApiKey(key, activeModel);
-          if (modelSelect && res.model) {
-            modelSelect.value = res.model;
+          if (res.availableModels && modelSelect) {
+            modelSelect.innerHTML = res.availableModels.map((m) => `
+              <option value="${escapeHTML(m.id)}" ${m.id === activeModel ? "selected" : ""}>${escapeHTML(m.name)}</option>
+            `).concat(`<option value="custom">Enter Custom Model ID...</option>`).join("");
           }
           if (statusEl) {
             statusEl.innerHTML = `<span style="color:#75ffaa">✓ Connection Verified! Google Gemini model <strong>${escapeHTML(activeModel)}</strong> responded successfully.</span>`;
           }
           updateTopBar();
         } else {
-          if (statusEl) statusEl.innerHTML = `<span style="color:#ff7575">✗ Connection failed: ${escapeHTML(res.error)}</span>`;
+          if (statusEl) {
+            statusEl.innerHTML = `<span style="color:#ff7575">✗ Connection failed: ${escapeHTML(res.error)}</span>`;
+          }
+          if (res.availableModels && modelSelect) {
+            modelSelect.innerHTML = res.availableModels.map((m) => `
+              <option value="${escapeHTML(m.id)}">${escapeHTML(m.name)}</option>
+            `).concat(`<option value="custom">Enter Custom Model ID...</option>`).join("");
+          }
         }
       })
       .finally(() => {
@@ -1227,6 +1296,13 @@ function handleContentChanges(e) {
   if (e.target.id === "quiz-topic-select") {
     const isCustom = e.target.value === "custom";
     const customField = $("#custom-topic-field");
+    if (customField) customField.hidden = !isCustom;
+  }
+
+  // Model select custom toggle
+  if (e.target.id === "api-model-select") {
+    const isCustom = e.target.value === "custom";
+    const customField = $("#custom-model-field");
     if (customField) customField.hidden = !isCustom;
   }
 }
@@ -1429,9 +1505,13 @@ async function handleContentSubmits(e) {
   if (form.id === "api-key-form") {
     const data = new FormData(form);
     const key = data.get("apiKey").trim();
-    const model = data.get("model");
+    let model = data.get("model");
+    const customModel = data.get("customModel")?.trim();
+    if (model === "custom" && customModel) {
+      model = customModel;
+    }
     setApiKey(key, model);
-    showToast(key ? "Gemini API key saved!" : "Switched to offline mode.");
+    showToast(key ? `Gemini API key saved (${model})!` : "Switched to offline mode.");
     updateTopBar();
     renderCurrentView();
     return;
