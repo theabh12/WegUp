@@ -1005,9 +1005,11 @@ function renderSettingsView(goal) {
 
           <label>
             Preferred Model
-            <select name="model">
-              <option value="gemini-1.5-flash" ${state.model === "gemini-1.5-flash" ? "selected" : ""}>Gemini 1.5 Flash (Fast, Recommended)</option>
-              <option value="gemini-2.0-flash" ${state.model === "gemini-2.0-flash" ? "selected" : ""}>Gemini 2.0 Flash (Next-Gen)</option>
+            <select name="model" id="api-model-select">
+              <option value="gemini-2.0-flash" ${state.model === "gemini-2.0-flash" || !state.model ? "selected" : ""}>Gemini 2.0 Flash (Recommended & Fast)</option>
+              <option value="gemini-2.5-flash" ${state.model === "gemini-2.5-flash" ? "selected" : ""}>Gemini 2.5 Flash (Hybrid Reasoning)</option>
+              <option value="gemini-2.5-flash-lite" ${state.model === "gemini-2.5-flash-lite" ? "selected" : ""}>Gemini 2.5 Flash-Lite (Low Latency)</option>
+              <option value="gemini-1.5-flash-latest" ${state.model === "gemini-1.5-flash-latest" || state.model === "gemini-1.5-flash" ? "selected" : ""}>Gemini 1.5 Flash (Latest)</option>
             </select>
           </label>
 
@@ -1158,13 +1160,21 @@ function handleContentClicks(e) {
     }
     btn.disabled = true;
     btn.textContent = "Connecting...";
-    if (statusEl) statusEl.textContent = "Pinging Google Gemini API endpoint...";
+    const modelSelect = $("#api-model-select");
+    const chosenModel = modelSelect ? modelSelect.value : (getState().model || "gemini-2.0-flash");
+    if (statusEl) statusEl.textContent = `Pinging Google Gemini API (${chosenModel})...`;
 
-    testGeminiConnection(key)
+    testGeminiConnection(key, chosenModel)
       .then((res) => {
         if (res.ok) {
-          if (statusEl) statusEl.innerHTML = `<span style="color:#75ffaa">✓ Connection Verified! Google Gemini responded successfully.</span>`;
-          setApiKey(key);
+          const activeModel = res.model || chosenModel;
+          setApiKey(key, activeModel);
+          if (modelSelect && res.model) {
+            modelSelect.value = res.model;
+          }
+          if (statusEl) {
+            statusEl.innerHTML = `<span style="color:#75ffaa">✓ Connection Verified! Google Gemini model <strong>${escapeHTML(activeModel)}</strong> responded successfully.</span>`;
+          }
           updateTopBar();
         } else {
           if (statusEl) statusEl.innerHTML = `<span style="color:#ff7575">✗ Connection failed: ${escapeHTML(res.error)}</span>`;
