@@ -55,7 +55,7 @@ function createDefaultState() {
   return {
     version: 2,
     apiKey: "",
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     profile: null,
     goals: [],
     activeGoalId: null,
@@ -114,9 +114,9 @@ export function getApiKey() {
   return state.apiKey || "";
 }
 
-export function setApiKey(key, model = "gemini-2.0-flash") {
+export function setApiKey(key, model = "gemini-2.5-flash") {
   state.apiKey = (key || "").trim();
-  state.model = model || "gemini-2.0-flash";
+  state.model = model || "gemini-2.5-flash";
   saveState();
   logActivity(state.apiKey ? "Connected Google Gemini API" : "Switched to Offline Demo mode");
 }

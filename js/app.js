@@ -127,7 +127,7 @@ function setupEventListeners() {
     if (btn) { btn.disabled = true; btn.textContent = "..."; }
     if (statusEl) statusEl.textContent = "Connecting to Gemini...";
 
-    const res = await testGeminiConnection(key, "gemini-2.0-flash");
+    const res = await testGeminiConnection(key, "gemini-2.5-flash");
     if (res.ok) {
       setApiKey(key, res.model);
       if (statusEl) statusEl.innerHTML = `<span style="color:#75ffaa">✓ Verified! Connected to <strong>${escapeHTML(res.model)}</strong>.</span>`;
