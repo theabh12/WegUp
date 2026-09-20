@@ -134,6 +134,11 @@ function setupEventListeners() {
     const deadline = $("#setup-deadline").value;
     const companyType = $("#setup-company")?.value || "Tech MNCs & High-Growth Startups";
 
+    const apiKey = $("#setup-apikey")?.value.trim();
+    if (apiKey) {
+      setApiKey(apiKey);
+    }
+
     if (!name) {
       if (err) err.textContent = "Please enter your name.";
       return;
