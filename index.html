@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="WegUp — AI-Powered Career Preparation, Placement Roadmaps, Mock Interviews & Resume ATS Optimization."
+    />
+    <meta name="theme-color" content="#0b0d16" />
+    <title>WegUp — AI-Powered Job Preparation Platform</title>
+    <link rel="stylesheet" href="./style.css" />
+    <script type="module" src="./js/app.js" defer></script>
+  </head>
+
+  <body>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+
+    <p id="storage-warning" class="storage-warning" role="status" hidden></p>
+
+    <!-- ONBOARDING MODAL -->
+    <main id="onboarding" class="onboarding">
+      <a class="brand onboarding-brand" href="./index.html">
+        <span class="brand-icon" aria-hidden="true">W</span>
+        WegUp<span class="brand-dot">.</span>
+      </a>
+
+      <section class="setup-card">
+        <div class="setup-intro">
+          <span class="eyebrow">ENGINEERING PLACEMENT READINESS</span>
+          <div class="coach-orb" aria-hidden="true"></div>
+
+          <h1 id="setup-title">Your next career chapter<br /><em>powered by AI.</em></h1>
+
+          <p>
+            Tell us your target role and timeline. WegUp turns your ambition into a structured, daily execution plan with mock interviews, ATS resume audits, and adaptive quizzes.
+          </p>
+
+          <div class="setup-features">
+            <span>⚡ Dynamic AI Roadmaps</span>
+            <span>🎙️ Simulated Mock Interviews</span>
+            <span>📄 AI Resume & ATS Audit</span>
+            <span>🧠 Adaptive Technical Quizzes</span>
+          </div>
+
+          <p class="small">
+            Built for engineering students · Local-first privacy · Live Google Gemini integration
+          </p>
+        </div>
+
+        <form id="setup-form" class="setup-form">
+          <div>
+            <span class="eyebrow">STUDENT PROFILE SETUP</span>
+            <h2>Let's configure your path.</h2>
+          </div>
+
+          <label>
+            Your Full Name
+            <input
+              id="setup-name"
+              autocomplete="name"
+              maxlength="60"
+              placeholder="e.g. Abhinav Tiwari"
+              required
+            />
+          </label>
+
+          <div class="form-row">
+            <label>
+              Target Role
+              <select id="setup-career"></select>
+            </label>
+
+            <label>
+              Current Preparation Level
+              <select id="setup-level">
+                <option value="beginner">Beginner (Foundations & Core CS)</option>
+                <option value="intermediate" selected>Intermediate (Project & SDE-1 Ready)</option>
+                <option value="advanced">Advanced (Interview Drill & Systems)</option>
+              </select>
+            </label>
+          </div>
+
+          <label id="custom-career-field" hidden>
+            Custom Role Title
+            <input
+              id="setup-custom"
+              maxlength="80"
+              placeholder="e.g. Blockchain Developer or Site Reliability Engineer"
+            />
+          </label>
+
+          <label>
+            Existing Skills & Technologies
+            <input
+              id="setup-skills"
+              maxlength="300"
+              placeholder="e.g. C++, Java, React, SQL, Git..."
+            />
+            <span class="field-note">
+              Comma-separated. The AI will personalize around your existing strengths.
+            </span>
+          </label>
+
+          <div class="form-row">
+            <label>
+              Target Company Focus
+              <select id="setup-company">
+                <option value="Tech MNCs & High-Growth Startups" selected>Tech MNCs & High-Growth Startups</option>
+                <option value="Product Giants & FAANG">Product Giants & FAANG Tier</option>
+                <option value="Mass Recruiter MNCs (TCS, Infosys, Wipro)">Campus Placement Drives</option>
+                <option value="Fintech & High-Frequency Startups">Fintech & High-Scale Systems</option>
+              </select>
+            </label>
+
+            <label>
+              Daily Study Commitment
+              <select id="setup-minutes">
+                <option value="30">30 minutes</option>
+                <option value="60" selected>1 hour / day</option>
+                <option value="90">1.5 hours / day</option>
+                <option value="120">2 hours / day</option>
+                <option value="180">3 hours / day</option>
+              </select>
+            </label>
+          </div>
+
+          <label>
+            Target Placement Date
+            <input id="setup-deadline" type="date" required />
+          </label>
+
+          <p id="setup-error" class="error" role="alert"></p>
+
+          <button class="button primary" type="submit">
+            Build my preparation path <span aria-hidden="true">↗</span>
+          </button>
+
+          <button id="cancel-goal" class="button ghost" type="button" hidden>
+            Back to dashboard
+          </button>
+        </form>
+      </section>
+    </main>
+
+    <!-- APPLICATION WORKSPACE -->
+    <div id="app" class="app-layout" hidden>
+      <aside class="sidebar">
+        <a class="brand" href="./index.html">
+          <span class="brand-icon" aria-hidden="true">W</span>
+          WegUp<span class="brand-dot">.</span>
+        </a>
+
+        <span class="nav-caption">AI WORKSPACE</span>
+
+        <nav id="navigation" aria-label="Main navigation">
+          <button class="nav-button" data-view="dashboard">
+            <span aria-hidden="true">◈</span> Overview
+          </button>
+          <button class="nav-button" data-view="roadmap">
+            <span aria-hidden="true">↗</span> AI Roadmap
+          </button>
+          <button class="nav-button" data-view="interview">
+            <span aria-hidden="true">🎙️</span> Mock Interview
+          </button>
+          <button class="nav-button" data-view="resume">
+            <span aria-hidden="true">📄</span> Resume ATS
+          </button>
+          <button class="nav-button" data-view="practice">
+            <span aria-hidden="true">🧠</span> Adaptive Quiz
+          </button>
+          <button class="nav-button" data-view="coach">
+            <span aria-hidden="true">✦</span> AI Mentor
+          </button>
+          <button class="nav-button" data-view="history">
+            <span aria-hidden="true">🕒</span> Activity Log
+          </button>
+          <button class="nav-button" data-view="settings">
+            <span aria-hidden="true">⚙️</span> Settings & API
+          </button>
+        </nav>
+
+        <div class="sidebar-bottom">
+          <div id="ai-status-badge" class="mode-badge" title="Click to configure Gemini API">
+            <span class="pulse-dot"></span> Checking AI status...
+          </div>
+          <p class="small">WegUp v2.0 · Engineering Mini-Project</p>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div>
+            <span class="eyebrow">MAKE YOUR NEXT MOVE</span>
+            <p id="today-label"></p>
+          </div>
+
+          <div class="goal-controls">
+            <label class="sr-only" for="goal-select">Active career goal</label>
+            <select id="goal-select"></select>
+            <button id="add-goal" class="button compact">+ Add goal</button>
+          </div>
+        </header>
+
+        <main id="content" class="content"></main>
+
+        <footer class="app-footer">
+          WegUp · AI-Powered Engineering Career & Placement Acceleration Platform.
+          <span>Developed by Abhinav Tiwari, Adarsh Pandey & Aditi Tiwari.</span>
+        </footer>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" hidden></div>
+
+    <noscript>
+      <p class="storage-warning">
+        Enable JavaScript to use WegUp’s AI roadmaps, mock interviews, and ATS analytics.
+      </p>
+    </noscript>
+  </body>
+</html>

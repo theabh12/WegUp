@@ -1,0 +1,19 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment Variables & Secrets
+.env
+.env.local
+*.secret
+
+# Node & Build artifacts (if any)
+node_modules/
+dist/
+build/
+.npm/
+
+# Logs
+*.log
+npm-debug.log*
