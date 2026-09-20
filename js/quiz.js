@@ -3,8 +3,8 @@
  * Generates custom, on-demand placement assessment questions across any technical topic.
  */
 
-import { generateGeminiJSON, isLiveAIMode } from "./api.js";
-import { uid, getState, saveState, logActivity } from "./state.js";
+import { generateGeminiJSON, isLiveAIMode } from "./api.js?v=3.5.0";
+import { uid, getState, saveState, logActivity } from "./state.js?v=3.5.0";
 
 export const POPULAR_TOPICS = [
   "Data Structures & Algorithms",

@@ -4,8 +4,8 @@
  * identifies critical missing keywords, and rewrites bullet points into STAR/XYZ format.
  */
 
-import { generateGeminiJSON, isLiveAIMode } from "./api.js";
-import { uid, getState, saveState, logActivity } from "./state.js";
+import { generateGeminiJSON, isLiveAIMode } from "./api.js?v=3.5.0";
+import { uid, getState, saveState, logActivity } from "./state.js?v=3.5.0";
 
 const COMMON_TECH_KEYWORDS = [
   "javascript", "typescript", "python", "java", "c++", "react", "node.js", "express",

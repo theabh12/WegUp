@@ -4,15 +4,13 @@
  * with robust multi-model fallback, clear diagnostic reporting, and graceful offline mode.
  */
 
-import { getApiKey, getState } from "./state.js";
+import { getApiKey, getState } from "./state.js?v=3.5.0";
 
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 
 export const DEFAULT_MODELS = [
-  { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash (Recommended & Fast)" },
-  { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro (Deep Reasoning)" },
-  { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash" },
-  { id: "gemini-1.5-flash-latest", name: "Gemini 1.5 Flash" }
+  { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash (Recommended - Ultra Fast & Hybrid Reasoning)" },
+  { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro (Deep Reasoning & Analysis)" }
 ];
 
 /**
@@ -54,24 +52,43 @@ export async function testGeminiConnection(apiKey, preferredModel = "gemini-2.5-
     available = await fetchAccountModels(cleanKey);
   } catch (err) {
     console.warn("Could not list models:", err);
+    const msg = (err.message || "").toLowerCase();
+    if (msg.includes("api_key_invalid") || msg.includes("invalid api key") || msg.includes("400") || msg.includes("403")) {
+      return {
+        ok: false,
+        error: `Invalid API Key: Google AI Studio rejected this key (${err.message}). Ensure you created the key in https://aistudio.google.com/ and that it starts with 'AIzaSy'.`
+      };
+    }
   }
 
   const modelIds = available.map((m) => m.id);
 
-  // Priority order of models to test
-  const candidates = [];
-  if (preferredModel && (!modelIds.length || modelIds.includes(preferredModel))) {
-    candidates.push(preferredModel);
+  // Build candidate models: strictly prioritize 2.5 models
+  const candidateSet = new Set();
+  
+  // If user selected a valid model (and not an obsolete 1.x model)
+  if (preferredModel && !preferredModel.startsWith("gemini-1.") && (modelIds.length === 0 || modelIds.includes(preferredModel))) {
+    candidateSet.add(preferredModel);
   }
-  if (modelIds.includes("gemini-2.5-flash")) candidates.push("gemini-2.5-flash");
-  if (modelIds.includes("gemini-2.5-pro")) candidates.push("gemini-2.5-pro");
-  if (modelIds.includes("gemini-2.0-flash")) candidates.push("gemini-2.0-flash");
+
+  // Prioritize gemini-2.5-flash and gemini-2.5-pro
+  if (modelIds.includes("gemini-2.5-flash")) candidateSet.add("gemini-2.5-flash");
+  if (modelIds.includes("gemini-2.5-pro")) candidateSet.add("gemini-2.5-pro");
+
+  // Add other valid text-generation models discovered on the key (exclude audio/tts/embedding)
+  for (const id of modelIds) {
+    if (!id.includes("preview-tts") && !id.includes("embedding") && !id.includes("image")) {
+      candidateSet.add(id);
+    }
+  }
 
   // Fallback candidates if list couldn't be fetched
-  if (!candidates.length) {
-    candidates.push("gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-1.5-flash");
+  if (candidateSet.size === 0) {
+    candidateSet.add("gemini-2.5-flash");
+    candidateSet.add("gemini-2.5-pro");
   }
 
+  const candidates = Array.from(candidateSet);
   let lastError = "";
 
   for (const model of candidates) {
@@ -153,12 +170,11 @@ export async function generateGeminiText(prompt, systemInstruction = "") {
     return null; // Offline fallback
   }
 
-  const preferredModel = state.model || "gemini-2.5-flash";
+  const preferredModel = (state.model && !state.model.startsWith("gemini-1.") && state.model !== "gemini-2.0-flash") ? state.model : "gemini-2.5-flash";
   const modelsToTry = [
     preferredModel,
     "gemini-2.5-flash",
-    "gemini-2.5-pro",
-    "gemini-2.0-flash"
+    "gemini-2.5-pro"
   ].filter((v, i, a) => v && a.indexOf(v) === i);
 
   let lastError = null;

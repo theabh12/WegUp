@@ -3,8 +3,8 @@
  * Personalized, context-aware engineering mentor grounded in student goals and progress.
  */
 
-import { generateGeminiText, isLiveAIMode } from "./api.js";
-import { getActiveGoal, getState } from "./state.js";
+import { generateGeminiText, isLiveAIMode } from "./api.js?v=3.5.0";
+import { getActiveGoal, getState } from "./state.js?v=3.5.0";
 
 export async function askCareerCoach(userMessage, conversationHistory = []) {
   const goal = getActiveGoal();

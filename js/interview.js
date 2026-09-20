@@ -3,8 +3,8 @@
  * Simulates realistic technical & behavioral interviews with turn-by-turn feedback and comprehensive scorecards.
  */
 
-import { generateGeminiJSON, generateGeminiText, isLiveAIMode } from "./api.js";
-import { uid, getState, saveState, logActivity } from "./state.js";
+import { generateGeminiJSON, generateGeminiText, isLiveAIMode } from "./api.js?v=3.5.0";
+import { uid, getState, saveState, logActivity } from "./state.js?v=3.5.0";
 
 export const INTERVIEW_TYPES = [
   { id: "technical", name: "Technical / Core CS", desc: "Role-specific architecture, algorithms, coding logic, and debugging." },

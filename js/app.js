@@ -23,14 +23,14 @@ import {
   prettyDate,
   escapeHTML,
   uid
-} from "./state.js";
+} from "./state.js?v=3.5.0";
 
-import { testGeminiConnection, isLiveAIMode, fetchAccountModels, DEFAULT_MODELS } from "./api.js";
-import { PRESET_ROLES, generateRoadmap } from "./roadmap.js";
-import { InterviewSession, INTERVIEW_TYPES } from "./interview.js";
-import { analyzeResumeATS } from "./resume.js";
-import { generateQuiz, recordQuizResult, POPULAR_TOPICS } from "./quiz.js";
-import { askCareerCoach } from "./coach.js";
+import { testGeminiConnection, isLiveAIMode, fetchAccountModels, DEFAULT_MODELS } from "./api.js?v=3.5.0";
+import { PRESET_ROLES, generateRoadmap } from "./roadmap.js?v=3.5.0";
+import { InterviewSession, INTERVIEW_TYPES } from "./interview.js?v=3.5.0";
+import { analyzeResumeATS } from "./resume.js?v=3.5.0";
+import { generateQuiz, recordQuizResult, POPULAR_TOPICS } from "./quiz.js?v=3.5.0";
+import { askCareerCoach } from "./coach.js?v=3.5.0";
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
@@ -1035,24 +1035,21 @@ function renderSettingsView(goal) {
             Gemini Model
             <div class="api-key-input-wrapper">
               <select name="model" id="api-model-select">
-                <option value="gemini-2.5-flash" ${state.model === "gemini-2.5-flash" || !state.model ? "selected" : ""}>Gemini 2.5 Flash (Hybrid Reasoning & High Speed)</option>
-                <option value="gemini-2.0-flash" ${state.model === "gemini-2.0-flash" ? "selected" : ""}>Gemini 2.0 Flash (Fast & Reliable)</option>
-                <option value="gemini-2.5-flash-lite" ${state.model === "gemini-2.5-flash-lite" ? "selected" : ""}>Gemini 2.5 Flash-Lite (Low Latency)</option>
-                <option value="gemini-2.0-flash-lite" ${state.model === "gemini-2.0-flash-lite" ? "selected" : ""}>Gemini 2.0 Flash-Lite</option>
-                <option value="gemini-1.5-flash-latest" ${state.model === "gemini-1.5-flash-latest" || state.model === "gemini-1.5-flash" ? "selected" : ""}>Gemini 1.5 Flash (Latest)</option>
-                <option value="custom" ${state.model && !["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-1.5-flash-latest"].includes(state.model) ? "selected" : ""}>Enter Custom Model ID...</option>
+                <option value="gemini-2.5-flash" ${state.model === "gemini-2.5-flash" || !state.model || state.model.startsWith("gemini-1.") || state.model === "gemini-2.0-flash" ? "selected" : ""}>Gemini 2.5 Flash (Recommended - Ultra Fast & Hybrid Reasoning)</option>
+                <option value="gemini-2.5-pro" ${state.model === "gemini-2.5-pro" ? "selected" : ""}>Gemini 2.5 Pro (Deep Reasoning & Complex Analysis)</option>
+                <option value="custom" ${state.model && !["gemini-2.5-flash", "gemini-2.5-pro"].includes(state.model) && !state.model.startsWith("gemini-1.") && state.model !== "gemini-2.0-flash" ? "selected" : ""}>Enter Custom Model ID...</option>
               </select>
               <button type="button" class="button ghost compact" id="btn-detect-models" title="Query Google AI Studio for accessible models on this key">Scan Key 🔍</button>
             </div>
           </label>
 
-          <label id="custom-model-field" ${state.model && !["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-1.5-flash-latest"].includes(state.model) ? "" : "hidden"}>
+          <label id="custom-model-field" ${state.model && !["gemini-2.5-flash", "gemini-2.5-pro"].includes(state.model) && !state.model.startsWith("gemini-1.") && state.model !== "gemini-2.0-flash" ? "" : "hidden"}>
             Custom Model ID
             <input
               id="custom-model-input"
               name="customModel"
-              placeholder="e.g. gemini-2.5-flash or gemini-2.0-flash"
-              value="${state.model && !["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-1.5-flash-latest"].includes(state.model) ? escapeHTML(state.model) : ""}"
+              placeholder="e.g. gemini-2.5-flash"
+              value="${state.model && !["gemini-2.5-flash", "gemini-2.5-pro"].includes(state.model) && !state.model.startsWith("gemini-1.") && state.model !== "gemini-2.0-flash" ? escapeHTML(state.model) : ""}"
             />
           </label>
 
@@ -1064,23 +1061,35 @@ function renderSettingsView(goal) {
         </form>
 
         <div class="api-guide-box">
-          <strong>How to get a free API Key:</strong>
+          <strong>How to get your free Gemini API Key:</strong>
           <ol class="small">
-            <li>Visit <a href="https://aistudio.google.com/" target="_blank" rel="noopener">Google AI Studio</a>.</li>
-            <li>Click <strong>"Get API Key"</strong> $\rightarrow$ Create new key.</li>
-            <li>Paste it here and click Save.</li>
+            <li>Open <a href="https://aistudio.google.com/" target="_blank" rel="noopener">Google AI Studio (aistudio.google.com)</a>.</li>
+            <li>Sign in with your Google account (personal @gmail.com is best).</li>
+            <li>Click the blue <strong>"Get API Key"</strong> button in the left sidebar.</li>
+            <li>Click <strong>"Create API Key"</strong> $\rightarrow$ Choose project or create new.</li>
+            <li>Copy the key (starts with <code>AIzaSy...</code>) and paste it here!</li>
           </ol>
+          <span class="field-note">100% Free: Google AI Studio provides free rate limits for Gemini 2.5 Flash without entering any credit card.</span>
         </div>
       </section>
 
       <!-- Profile & Data Controls -->
       <div class="stack">
         <section class="card">
-          <h2>Student Profile</h2>
+          <h2>Student Profile & Target Role</h2>
           <form id="profile-form">
             <label>
               Full Name
               <input name="name" value="${escapeHTML(state.profile?.name || "")}" required />
+            </label>
+            <label>
+              Active Target Role
+              <select name="roleKey" id="profile-role-select">
+                ${Object.entries(PRESET_ROLES).map(([key, r]) => `
+                  <option value="${key}" ${goal?.roleKey === key ? "selected" : ""}>${escapeHTML(r.name)}</option>
+                `).join("")}
+                <option value="custom" ${goal?.roleKey === "custom" ? "selected" : ""}>Custom Role (${escapeHTML(goal?.name || "Custom")})</option>
+              </select>
             </label>
             <label>
               Daily Study Target (Minutes)
@@ -1090,7 +1099,10 @@ function renderSettingsView(goal) {
               Placement Target Date
               <input name="deadline" type="date" value="${goal ? goal.deadline : dateKey()}" required />
             </label>
-            <button class="button primary compact" type="submit">Update Profile</button>
+            <div class="button-row">
+              <button class="button primary compact" type="submit">Update Profile</button>
+              <button class="button ghost compact" type="button" id="btn-switch-add-role">+ Create New Pathway</button>
+            </div>
           </form>
         </section>
 
@@ -1230,6 +1242,12 @@ function handleContentClicks(e) {
     return;
   }
 
+  // Switch or Add Role Button in Settings
+  if (btn.id === "btn-switch-add-role") {
+    showOnboarding(true);
+    return;
+  }
+
   // Test Gemini Connection Button
   if (btn.id === "btn-test-gemini") {
     const input = $("#api-key-input");
@@ -1248,9 +1266,11 @@ function handleContentClicks(e) {
     if (chosenModel === "custom" && customInput && customInput.value.trim()) {
       chosenModel = customInput.value.trim();
     }
-    if (!chosenModel) chosenModel = getState().model || "gemini-2.5-flash";
+    if (!chosenModel || chosenModel.startsWith("gemini-1.") || chosenModel === "gemini-2.0-flash") {
+      chosenModel = "gemini-2.5-flash";
+    }
 
-    if (statusEl) statusEl.textContent = `Connecting to Google Gemini (${chosenModel})...`;
+    if (statusEl) statusEl.textContent = `Testing connection to Google Gemini (${chosenModel})...`;
 
     testGeminiConnection(key, chosenModel)
       .then((res) => {
@@ -1263,7 +1283,7 @@ function handleContentClicks(e) {
             `).concat(`<option value="custom">Enter Custom Model ID...</option>`).join("");
           }
           if (statusEl) {
-            statusEl.innerHTML = `<span style="color:#75ffaa">✓ Connection Verified! Google Gemini model <strong>${escapeHTML(activeModel)}</strong> responded successfully.</span>`;
+            statusEl.innerHTML = `<span style="color:#75ffaa">✓ Connection Verified! Google Gemini model <strong>${escapeHTML(activeModel)}</strong> responded with "${escapeHTML(res.reply || "PONG")}".</span>`;
           }
           updateTopBar();
         } else {
@@ -1549,17 +1569,23 @@ async function handleContentSubmits(e) {
   if (form.id === "profile-form") {
     const data = new FormData(form);
     const name = data.get("name").trim();
+    const roleKey = data.get("roleKey");
     const minutes = Number(data.get("minutes"));
     const deadline = data.get("deadline");
 
     const state = getState();
     state.profile = { ...state.profile, name };
     if (goal) {
+      if (roleKey && roleKey !== "custom" && roleKey !== goal.roleKey && PRESET_ROLES[roleKey]) {
+        goal.roleKey = roleKey;
+        goal.name = PRESET_ROLES[roleKey].name;
+      }
       goal.minutes = minutes;
       goal.deadline = deadline;
     }
     saveState();
-    showToast("Profile updated.");
+    showToast("Profile & Career Target updated.");
+    updateTopBar();
     renderCurrentView();
     return;
   }

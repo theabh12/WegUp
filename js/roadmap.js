@@ -3,8 +3,8 @@
  * Generates tailored syllabi using Gemini AI or structured intelligent fallback.
  */
 
-import { generateGeminiJSON, isLiveAIMode } from "./api.js";
-import { uid, dateKey, addDays, getActiveGoal, saveState, logActivity } from "./state.js";
+import { generateGeminiJSON, isLiveAIMode } from "./api.js?v=3.5.0";
+import { uid, dateKey, addDays, getActiveGoal, saveState, logActivity } from "./state.js?v=3.5.0";
 
 export const PRESET_ROLES = {
   fullstack: {

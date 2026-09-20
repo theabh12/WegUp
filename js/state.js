@@ -75,6 +75,10 @@ export function initState() {
     if (raw) {
       const parsed = JSON.parse(raw);
       state = { ...createDefaultState(), ...parsed };
+      // Force migration of stale or legacy models to gemini-2.5-flash
+      if (!state.model || state.model.startsWith("gemini-1.") || state.model === "gemini-2.0-flash") {
+        state.model = "gemini-2.5-flash";
+      }
     } else {
       // Check legacy v1 state for smooth migration
       const legacyRaw = localStorage.getItem("wegup.functional.v1");
