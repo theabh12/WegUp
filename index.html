@@ -9,8 +9,8 @@
     />
     <meta name="theme-color" content="#0b0d16" />
     <title>WegUp — AI-Powered Job Preparation Platform</title>
-    <link rel="stylesheet" href="./style.css?v=2.6.2" />
-    <script type="module" src="./js/app.js?v=2.6.2" defer></script>
+    <link rel="stylesheet" href="./style.css?v=2.7.0" />
+    <script type="module" src="./js/app.js?v=2.7.0" defer></script>
   </head>
 
   <body>
@@ -69,7 +69,17 @@
           <div class="form-row">
             <label>
               Target Role
-              <select id="setup-career"></select>
+              <select id="setup-career">
+                <option value="fullstack" selected>Full Stack Engineer (MERN / Next.js)</option>
+                <option value="frontend">Frontend Specialist (React / Vue)</option>
+                <option value="backend">Backend Engineer (Node.js / Java / Go / Python)</option>
+                <option value="ai_ml">AI & Machine Learning Engineer</option>
+                <option value="data_analyst">Data Analyst / Business Intelligence</option>
+                <option value="devops">DevOps & Cloud Engineer (AWS / Docker)</option>
+                <option value="cybersecurity">Cybersecurity Analyst</option>
+                <option value="mobile">Mobile App Developer (Flutter / React Native)</option>
+                <option value="custom">Other / Custom Role...</option>
+              </select>
             </label>
 
             <label>
@@ -133,12 +143,15 @@
 
           <label>
             Google Gemini API Key (Optional)
-            <input
-              id="setup-apikey"
-              type="password"
-              placeholder="Paste your Gemini API key (AIzaSy...)"
-            />
-            <span class="field-note">
+            <div class="api-key-input-wrapper">
+              <input
+                id="setup-apikey"
+                type="password"
+                placeholder="Paste your Gemini API key (AIzaSy...)"
+              />
+              <button type="button" class="button ghost compact" id="btn-test-setup-key">Test ⚡</button>
+            </div>
+            <span class="field-note" id="setup-key-status">
               Optional. Leave blank for offline mode. You can also configure or change it anytime in Settings.
             </span>
           </label>

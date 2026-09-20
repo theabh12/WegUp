@@ -109,6 +109,34 @@ function setupEventListeners() {
     showOnboarding(true);
   });
 
+  // Cancel Goal Button
+  $("#cancel-goal")?.addEventListener("click", () => {
+    showApp();
+  });
+
+  // Onboarding API Key Test Button
+  $("#btn-test-setup-key")?.addEventListener("click", async () => {
+    const input = $("#setup-apikey");
+    const statusEl = $("#setup-key-status");
+    const key = input ? input.value.trim() : "";
+    if (!key) {
+      if (statusEl) statusEl.innerHTML = `<span style="color:#ff7575">Please enter an API key to test.</span>`;
+      return;
+    }
+    const btn = $("#btn-test-setup-key");
+    if (btn) { btn.disabled = true; btn.textContent = "..."; }
+    if (statusEl) statusEl.textContent = "Connecting to Gemini...";
+
+    const res = await testGeminiConnection(key, "gemini-2.0-flash");
+    if (res.ok) {
+      setApiKey(key, res.model);
+      if (statusEl) statusEl.innerHTML = `<span style="color:#75ffaa">✓ Verified! Connected to <strong>${escapeHTML(res.model)}</strong>.</span>`;
+    } else {
+      if (statusEl) statusEl.innerHTML = `<span style="color:#ff7575">✗ Failed: ${escapeHTML(res.error)}</span>`;
+    }
+    if (btn) { btn.disabled = false; btn.textContent = "Test ⚡"; }
+  });
+
   // Onboarding Role Change
   $("#setup-career")?.addEventListener("change", (e) => {
     const isCustom = e.target.value === "custom";
@@ -1552,5 +1580,9 @@ async function handleCoachMessage(text) {
   if (log) log.scrollTop = log.scrollHeight;
 }
 
-// Start app on DOMContentLoaded
-window.addEventListener("DOMContentLoaded", init);
+// Start app safely (handles both loading and already-loaded states)
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
